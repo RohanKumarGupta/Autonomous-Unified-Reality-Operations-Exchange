@@ -1,0 +1,203 @@
+version: '3.8'
+
+include:
+  - docker-compose.infra.yml
+
+x-spring-boot-service: &spring-boot-service
+  restart: unless-stopped
+  environment:
+    - SPRING_PROFILES_ACTIVE=docker
+    - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/
+    - SPRING_DATASOURCE_USERNAME=aurax
+    - SPRING_DATASOURCE_PASSWORD=aurax_local
+    - SPRING_DATA_MONGODB_URI=mongodb://aurax:aurax_local@aurax-mongo:27017/aurax?authSource=admin
+    - SPRING_DATA_REDIS_HOST=aurax-redis
+    - SPRING_DATA_REDIS_PORT=6379
+    - SPRING_DATA_REDIS_PASSWORD=aurax_local
+    - SPRING_KAFKA_BOOTSTRAP_SERVERS=aurax-kafka:9092
+  depends_on:
+    aurax-postgres:
+      condition: service_healthy
+    aurax-mongo:
+      condition: service_healthy
+    aurax-redis:
+      condition: service_healthy
+    aurax-kafka:
+      condition: service_healthy
+  networks:
+    - aurax-network
+
+services:
+  # ==========================================
+  # API Gateway
+  # ==========================================
+  aurax-api-gateway:
+    <<: *spring-boot-service
+    container_name: aurax-api-gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+
+  # ==========================================
+  # Spring Boot Microservices
+  # ==========================================
+  aurax-identity:
+    <<: *spring-boot-service
+    container_name: aurax-identity
+    build:
+      context: ./services/identity-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_identity
+
+  aurax-tenant:
+    <<: *spring-boot-service
+    container_name: aurax-tenant
+    build:
+      context: ./services/tenant-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_tenant
+
+  aurax-asset:
+    <<: *spring-boot-service
+    container_name: aurax-asset
+    build:
+      context: ./services/asset-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_asset
+
+  aurax-incident:
+    <<: *spring-boot-service
+    container_name: aurax-incident
+    build:
+      context: ./services/incident-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_incident
+
+  aurax-workflow:
+    <<: *spring-boot-service
+    container_name: aurax-workflow
+    build:
+      context: ./services/workflow-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_workflow
+
+  aurax-audit:
+    <<: *spring-boot-service
+    container_name: aurax-audit
+    build:
+      context: ./services/audit-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_audit
+
+  aurax-analytics:
+    <<: *spring-boot-service
+    container_name: aurax-analytics
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_analytics
+
+  aurax-knowledge:
+    <<: *spring-boot-service
+    container_name: aurax-knowledge
+    build:
+      context: ./services/knowledge-service
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aurax-postgres:5432/aurax_knowledge
+
+  aurax-notification:
+    <<: *spring-boot-service
+    container_name: aurax-notification
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089"
+
+  aurax-integration:
+    <<: *spring-boot-service
+    container_name: aurax-integration
+    build:
+      context: ./services/integration-service
+      dockerfile: Dockerfile
+    ports:
+      - "8091:8091"
+
+  aurax-ai:
+    <<: *spring-boot-service
+    container_name: aurax-ai
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8092:8092"
+
+  aurax-system:
+    <<: *spring-boot-service
+    container_name: aurax-system
+    build:
+      context: ./services/system-service
+      dockerfile: Dockerfile
+    ports:
+      - "8093:8093"
+
+  aurax-report:
+    <<: *spring-boot-service
+    container_name: aurax-report
+    build:
+      context: ./services/report-service
+      dockerfile: Dockerfile
+    ports:
+      - "8094:8094"
+
+  # ==========================================
+  # Frontend Service
+  # ==========================================
+  aurax-frontend:
+    container_name: aurax-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    networks:
+      - aurax-network
+    depends_on:
+      - aurax-api-gateway

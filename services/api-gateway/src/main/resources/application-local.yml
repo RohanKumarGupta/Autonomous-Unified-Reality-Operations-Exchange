@@ -1,0 +1,71 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    gateway:
+      routes:
+        - id: identity-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/roles/**, /api/v1/permissions/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+
+        - id: tenant-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/organizations/**, /api/v1/plans/**
+            
+        - id: asset-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/sites/**, /api/v1/buildings/**, /api/v1/floors/**, /api/v1/rooms/**, /api/v1/assets/**, /api/v1/sensors/**, /api/v1/digital-twin/**
+
+        - id: incident-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/incidents/**, /api/v1/work-orders/**, /api/v1/technicians/**, /api/v1/vendors/**, /api/v1/sla-policies/**
+
+        - id: workflow-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/v1/workflows/**, /api/v1/workflow-executions/**, /api/v1/approvals/**
+
+        - id: event-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/v1/events/**
+
+        - id: ai-orchestrator
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/v1/ai/**
+
+        - id: knowledge-service
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/v1/knowledge/**
+
+        - id: simulation-service
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/v1/simulations/**
+
+        - id: notification-service
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/v1/notifications/**
+
+        - id: audit-service
+          uri: http://localhost:8091
+          predicates:
+            - Path=/api/v1/audit/**
+
+        - id: analytics-service
+          uri: http://localhost:8092
+          predicates:
+            - Path=/api/v1/analytics/**

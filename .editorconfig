@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Java and XML (Backend)
+[*.{java,xml}]
+indent_style = space
+indent_size = 4
+
+# Frontend and Configs
+[*.{js,jsx,ts,tsx,json,css,scss,html,yml,yaml,md}]
+indent_style = space
+indent_size = 2
+
+# Override for specific files
+[pom.xml]
+indent_style = space
+indent_size = 4

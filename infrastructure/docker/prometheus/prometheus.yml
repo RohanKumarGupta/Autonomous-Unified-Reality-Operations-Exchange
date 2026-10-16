@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'aurax-services'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+        - 'aurax-api-gateway:8080'
+        - 'aurax-identity:8081'
+        - 'aurax-tenant:8082'
+        - 'aurax-asset:8083'
+        - 'aurax-incident:8084'
+        - 'aurax-workflow:8085'
+        - 'aurax-audit:8086'
+        - 'aurax-analytics:8087'
+        - 'aurax-knowledge:8088'
+        - 'aurax-notification:8089'
+        - 'aurax-integration:8091'
+        - 'aurax-ai:8092'
+        - 'aurax-system:8093'
+        - 'aurax-report:8094'
